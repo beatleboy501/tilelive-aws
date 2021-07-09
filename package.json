@@ -1,0 +1,24 @@
+{
+  "name": "tilelive-aws",
+  "version": "1.0.0",
+  "description": "A tilelive module for AWS Location Service style sources",
+  "main": "tilelive-aws.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beatleboy501/tilelive-aws.git"
+  },
+  "keywords": [
+    "tilelive",
+    "aws",
+    "location"
+  ],
+  "author": "Andrew Allison",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/beatleboy501/tilelive-aws/issues"
+  },
+  "homepage": "https://github.com/beatleboy501/tilelive-aws#readme"
+}
