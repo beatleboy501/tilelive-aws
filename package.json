@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/beatleboy501/tilelive-aws/issues"
   },
-  "homepage": "https://github.com/beatleboy501/tilelive-aws#readme"
+  "homepage": "https://github.com/beatleboy501/tilelive-aws#readme",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  }
 }
