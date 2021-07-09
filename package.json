@@ -23,5 +23,10 @@
   "homepage": "https://github.com/beatleboy501/tilelive-aws#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
+  },
+  "dependencies": {
+    "@aws-sdk/client-location": "^3.20.0",
+    "semver": "^7.3.5",
+    "url": "^0.11.0"
   }
 }
