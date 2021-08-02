@@ -3,9 +3,7 @@
 const {
   Location
 } = require("@aws-sdk/client-location");
-const url = require("url"),
-  semver = require("semver");
-
+const url = require("url");
 
 
 const quadKey = function (zoom, x, y) {
@@ -35,6 +33,7 @@ module.exports = function (tilelive) {
   // npm install tl tilelive-file
   class AwsSource {
     constructor(uri, callback) {
+      
       // aws:///MapName
       // this uses the path component rather than the host because URL normalization will downcase the host and resource names are case-sensitive
       this.mapName = uri.path.slice(1);
@@ -46,13 +45,6 @@ module.exports = function (tilelive) {
         maxzoom: Infinity,
         format: "pbf",
       };
-
-      if (semver.satisfies(process.version, ">=0.11.0")) {
-        uri.hash = uri.hash && decodeURIComponent(uri.hash);
-        uri.pathname = decodeURIComponent(uri.pathname);
-        uri.path = decodeURIComponent(uri.path);
-        uri.href = decodeURIComponent(uri.href);
-      }
 
       this.source = url.format(uri).replace(/(\{\w\})/g, function (x) {
         return x.toLowerCase();
@@ -72,7 +64,6 @@ module.exports = function (tilelive) {
       this.info.minzoom = "minzoom" in this.info ? this.info.minzoom : 0;
       this.info.maxzoom = "maxzoom" in this.info ? this.info.maxzoom : Infinity;
 
-
       return callback(null, this);
     }
 
@@ -87,6 +78,8 @@ module.exports = function (tilelive) {
         });
         return callback(null, tile.Blob, {});
       } catch (err) {
+        console.log('ERROR');
+        console.log(err);
         return callback(err);
       }
     }
