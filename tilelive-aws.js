@@ -1,29 +1,11 @@
 "use strict";
 
+const { Buffer } = require("buffer");
+const url = require("url");
+
 const {
   Location
 } = require("@aws-sdk/client-location");
-const url = require("url");
-
-
-const quadKey = function (zoom, x, y) {
-  let key = "";
-
-  for (let i = zoom; i > 0; i--) {
-    let digit = "0";
-    const mask = 1 << (i - 1);
-    if ((x & mask) !== 0) {
-      digit++;
-    }
-    if ((y & mask) !== 0) {
-      digit++;
-      digit++;
-    }
-    key += digit;
-  }
-
-  return key;
-};
 
 
 module.exports = function (tilelive) {
@@ -33,38 +15,35 @@ module.exports = function (tilelive) {
   // npm install tl tilelive-file
   class AwsSource {
     constructor(uri, callback) {
+
+      if (uri.path == null) {
+        throw new Error("Usage: aws:///<MapResource>");
+      }
       
       // aws:///MapName
       // this uses the path component rather than the host because URL normalization will downcase the host and resource names are case-sensitive
       this.mapName = uri.path.slice(1);
 
-      // TODO call client.getMapStyleDescriptor to get the zoom ranges for the available tiles (in the sources block)
-      this.info = {
-        bounds: [-180, -85.0511, 180, 85.0511],
-        minzoom: 0,
-        maxzoom: Infinity,
-        format: "pbf",
-      };
+      return client.getMapStyleDescriptor({
+        MapName: this.mapName
+      }, (err, { Blob }) => {
+        if (err) {
+          return callback(err);
+        }
 
-      this.source = url.format(uri).replace(/(\{\w\})/g, function (x) {
-        return x.toLowerCase();
+        const style = JSON.parse(Buffer.from(Blob));
+        const maxzoom = Object.values(style.sources).map(({ maxzoom }) => maxzoom).pop();
+
+        this.info = {
+          bounds: [-180, -85.0511, 180, 85.0511],
+          minzoom: 0,
+          maxzoom,
+          // TODO support non-MVT sources (type !== "vector")
+          format: "pbf",
+        };
+
+        return callback(null, this);
       });
-      this.scale = uri.query.scale || 1;
-      this.tileSize = (uri.query.tileSize | 0) || 256;
-      if (this.source.match(/{q}/)) {
-        this.quadKey = quadKey;
-      } else {
-        this.quadKey = function () {};
-      }
-
-      // abuse the URI object by looking for .info directly on it
-      this.info = uri.info || {};
-      this.info.autoscale = "autoscale" in this.info ? this.info.autoscale : true;
-      this.info.bounds = this.info.bounds || [-180, -85.0511, 180, 85.0511];
-      this.info.minzoom = "minzoom" in this.info ? this.info.minzoom : 0;
-      this.info.maxzoom = "maxzoom" in this.info ? this.info.maxzoom : Infinity;
-
-      return callback(null, this);
     }
 
     async getTile(z, x, y, callback) {
@@ -76,7 +55,11 @@ module.exports = function (tilelive) {
           X: x,
           Y: y,
         });
-        return callback(null, tile.Blob, {});
+
+        return callback(null, Buffer.from(tile.Blob), {
+          // TODO in future, tile contents may be compressed
+          "Content-Encoding": "identity"
+        });
       } catch (err) {
         console.log('ERROR');
         console.log(err);
